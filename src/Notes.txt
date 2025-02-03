@@ -1,0 +1,46 @@
+as of today, my intial implementation on 3rd/feb/25
+
+
+First one is my server response times; Nothing much it just returns Ok http response.
+Without any request handling at all.
+
+ajreddy@CPC-ajred-PC7GV:/mnt/q/source/AjayServer/src$ wrk -H 'Host: localhost' -H 'Accept: text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7' -H 'Connection: keep-alive' --latency -d 15 -c 512 --timeout 8 -t 4 http://localhost:8080
+Running 15s test @ http://localhost:8080
+  4 threads and 512 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    44.23ms   12.41ms 148.33ms   71.91%
+    Req/Sec     1.32k   229.65     1.94k    66.78%
+  Latency Distribution
+     50%   42.74ms
+     75%   51.44ms
+     90%   59.98ms
+     99%   76.61ms
+  78535 requests in 15.08s, 5.77MB read
+  Socket errors: connect 0, read 78529, write 781688, timeout 0
+Requests/sec:   5207.24
+Transfer/sec:    391.56KB
+
+This is fasthttp helloWorldServer
+Without any request handling or config or whatsoever
+
+ajreddy@CPC-ajred-PC7GV:/mnt/q/source/AjayServer/src$ wrk -H 'Host: localhost' -H 'Accept: text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7' -H 'Connection: keep-alive' --latency -d 15 -c 512 --timeout 8 -t 4 http://localhost:8080
+Running 15s test @ http://localhost:8080
+  4 threads and 512 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     6.35ms    5.25ms 223.41ms   81.91%
+    Req/Sec    17.83k     3.11k   27.12k    69.83%
+  Latency Distribution
+     50%    5.17ms
+     75%    8.78ms
+     90%   12.56ms
+     99%   21.22ms
+  1060331 requests in 15.09s, 150.67MB read
+  Socket errors: connect 0, read 0, write 32, timeout 0
+Requests/sec:  70273.45
+Transfer/sec:      9.99MB
+ajreddy@CPC-ajred-PC7GV:/mnt/q/source/AjayServer/src$
+
+
+I am as of now 7.33(44/6) times slower than fasthttp library.
+    1. I yet don't process any customer config or http headers; no logic of any kind inside request handling
+    2. I am getting error for few requests as EOF while reaing from connection, need to fix it.
