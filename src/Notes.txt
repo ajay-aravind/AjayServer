@@ -44,3 +44,11 @@ ajreddy@CPC-ajred-PC7GV:/mnt/q/source/AjayServer/src$
 I am as of now 7.33(44/6) times slower than fasthttp library.
     1. I yet don't process any customer config or http headers; no logic of any kind inside request handling
     2. I am getting error for few requests as EOF while reaing from connection, need to fix it.
+
+5th/feb/2025
+
+Latency is about same as i logged before.
+Implemented multi process approach and also implemented go routine pool instead of creating single go routine for reach request
+1. I need to look at non blocking read calls while reading from connections
+2. also while reading i am creating buffer everytime, may be i can reuse it within a go routine??
+3. I think i can add support for http2 or quic, as i don't have any USP other than speed(if I achieve this)
