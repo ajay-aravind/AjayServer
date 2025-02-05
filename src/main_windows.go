@@ -10,11 +10,12 @@ import (
 	"os/exec"
 )
 
-func multiThreadedMain() {
-	var workerCount int = 10
+func multiThreadedMain(PortToBind int, ProcessCount int, AddressToBind string, Protocol string) {
+	var workerCount int = ProcessCount
 	// Check if this is a child process (forked)
 	if len(os.Args) > 1 && os.Args[1] == "worker" {
-		startWorkerProcess()
+		tasksChannel := InitGoRoutinePool(WorkerPoolCount)
+		startWorkerProcess(PortToBind, AddressToBind, Protocol, tasksChannel)
 		return
 	}
 
@@ -32,7 +33,7 @@ func multiThreadedMain() {
 
 }
 
-func startWorkerProcess() {
-	var server listener = listener{port: ":8080", protocol: "tcp"}
-	server.startWorker()
+func startWorkerProcess(PortToBind int, AddressToBind string, Protocol string, tasksChannel chan<- Task) {
+	var server listener = listener{port: PortToBind, protocol: Protocol, address: AddressToBind}
+	server.startWorker(tasksChannel)
 }

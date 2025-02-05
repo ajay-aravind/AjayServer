@@ -4,6 +4,7 @@
 package main
 
 import (
+	"fmt"
 	"syscall"
 
 	"golang.org/x/sys/windows"
@@ -15,5 +16,10 @@ func controlSocketOptions(network, address string, c syscall.RawConn) error {
 		// Windows doesn't support SO_REUSEPORT or TCP_FASTOPEN.
 		// We use SO_EXCLUSIVEADDRUSE instead, which prevents port conflicts.
 		_ = windows.SetsockoptInt(windows.Handle(fd), syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1)
+
+		err := windows.SetsockoptInt(windows.Handle(fd), syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1) // Enable address reuse
+		if err != nil {
+			fmt.Println("Error setting SO_REUSEADDR:", err)
+		}
 	})
 }

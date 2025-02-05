@@ -1,0 +1,66 @@
+Core Features of fasthttp
+High Performance
+
+Designed for speed, using less memory and avoiding allocations.
+Faster than net/http due to optimized memory usage.
+Efficient Request Handling
+
+Handles GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS requests.
+Supports routing via third-party routers like fasthttp/router.
+Keep-Alive Support
+
+Supports HTTP persistent connections (keep-alive) for performance.
+Reduces overhead of repeated handshakes.
+Low-Level Control
+
+Access to raw HTTP request and response buffers for better performance tuning.
+Direct control over headers, cookies, and body parsing.
+Streaming & Large File Handling
+
+Supports reading/writing large files efficiently.
+Uses RequestCtx.SendFile() for efficient file transfers.
+Compression & Gzip Support
+
+Built-in Gzip/Brotli compression support for responses.
+Custom Middleware Support
+
+While it doesn’t have built-in middleware like net/http, third-party solutions allow middleware chaining.
+WebSocket Support
+
+Can be used with third-party libraries like fasthttp/websocket to handle WebSocket connections.
+TLS (HTTPS) Support
+
+Can serve HTTPS with TLS certificates.
+Graceful Shutdown Support
+
+Can be combined with context to allow safe server shutdown.
+Header & Query Parameter Parsing
+
+Fast methods for retrieving request headers, query parameters, and form values.
+Cookie Management
+
+Supports setting, getting, and deleting cookies in requests/responses.
+Timeout Handling
+
+Custom timeout settings for request processing.
+Request Limiting (Rate Limiting & Throttling)
+
+Supports limiting concurrent requests to prevent overload.
+Built-in HTTP Client
+
+Includes a high-performance HTTP client optimized for speed.
+Multipart Form Handling
+
+Supports file uploads via ctx.FormFile().
+CORS Handling
+
+Can manually configure CORS headers for cross-origin requests.
+JSON & Data Serialization
+
+Supports easy JSON encoding/decoding with Go’s encoding/json.
+Basic Authentication
+
+Can implement authentication via headers manually.
+Load Balancing Support
+
+Can work with reverse proxies like Nginx or HAProxy for load balancing.
