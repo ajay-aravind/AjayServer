@@ -58,3 +58,5 @@ Identified that child processes are not terminating when parent process terminat
 used buffer pool instead of creating buffer every time we handle a request, didn't make much difference
 Also the eof errors are may be just due to client abruptly closing connections, i've added error handling for the eof error
 Perf is still around the same numbers between 45-55ms/sec
+
+todo: I still need to work on non-blocking read calls while reading from connections i.e use IOCP
