@@ -1,8 +1,6 @@
 package main
 
-import (
-	"time"
-)
+import "runtime"
 
 const PortToBind = 8080
 
@@ -14,8 +12,8 @@ const AddressToBind = "0.0.0.0"
 // number of processes listening on the port
 const ProcessCount = 10
 
-// go Routine pool count per process
-const WorkerPoolCount = 20
+// go Routine pool count
+var WorkerPoolCount int = runtime.NumCPU()
 
 const Protocol = "tcp"
 
@@ -24,9 +22,8 @@ func main() {
 	// single thread vs multi thread
 	// when using single process i see that 1000 request with 50 clients taking average of 9 seconds
 	// with 5 worker threads, i see that it is taking 5 seconds
-	multiThreadedMain(PortToBind, ProcessCount, AddressToBind, Protocol)
+	singleThreadedMain(PortToBind, AddressToBind, Protocol)
 	// singleThreadedMain(PortToBind, ProcessCount, AddressToBind, Protocol)
-	time.Sleep(200 * time.Second)
 }
 
 func singleThreadedMain(PortToBind int, AddressToBind string, Protocol string) {

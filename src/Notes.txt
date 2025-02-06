@@ -52,3 +52,9 @@ Implemented multi process approach and also implemented go routine pool instead 
 1. I need to look at non blocking read calls while reading from connections
 2. also while reading i am creating buffer everytime, may be i can reuse it within a go routine??
 3. I think i can add support for http2 or quic, as i don't have any USP other than speed(if I achieve this)
+
+6th/feb
+Identified that child processes are not terminating when parent process terminated. Fixed that issue
+used buffer pool instead of creating buffer every time we handle a request, didn't make much difference
+Also the eof errors are may be just due to client abruptly closing connections, i've added error handling for the eof error
+Perf is still around the same numbers between 45-55ms/sec

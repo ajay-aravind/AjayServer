@@ -47,6 +47,13 @@ func (listener listener) startWorker(tasksChannel chan<- Task) {
 			continue
 		}
 
+		if tc, ok := conn.(*net.TCPConn); ok {
+			if err := tc.SetKeepAlive(true); err != nil {
+				_ = tc.Close()
+				fmt.Println("error while setting keep alive connection")
+			}
+		}
+
 		// Handle the connection in a separate goroutine
 		// todo create go routine pool to handle connections
 		// creating go routine per request on demamd might create latency and exhaust resources
