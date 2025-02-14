@@ -66,3 +66,7 @@ for iocp in windows go packages. I am not able to get file handle for socket con
 is to use pure windows networking APIs instead of using go network packages. Seems like not worth the trouble.
 
 Either i need to switch to linux for developing this or move on the parsing http request and providing other functionality.
+
+I see that i when i add more than -c 100 in the wrk tool, i am exceeding time around 7ms. i.e i need to optimize for concurrency
+I see cpu is maxing out in test, i need to use profiler for go and see how to optimize it.
+I see a tool called pprof which can give be a profiler for my go app. Let's work on it next.
