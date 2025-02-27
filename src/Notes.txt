@@ -95,3 +95,8 @@ Running 15s test @ http://localhost:8080
   Socket errors: connect 0, read 0, write 471, timeout 0
 Requests/sec:  74811.91
 Transfer/sec:      5.49MB
+
+From perf profiles i can still see that the conn.Write call is taking lot of time but not sure. How to solve that issue? I can see online that c calls from go is expected tot ake that much time
+I can compare this with fast server profile later. If that also has similar issue then it is platform issue, nothing much that i can do.
+
+For now i will move my focus to parsing the http request and sending the proper response.
