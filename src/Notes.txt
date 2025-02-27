@@ -62,6 +62,7 @@ Perf is still around the same numbers between 45-55ms/sec
 todo: I still need to work on non-blocking read calls while reading from connections i.e use IOCP
 
 I tried IOCP while accepting connections, but it seems very difficult. Seems like we don't have proper support
+  update: go sever already uses the iocp underneath the hood
 for iocp in windows go packages. I am not able to get file handle for socket connection. And the only way to do it
 is to use pure windows networking APIs instead of using go network packages. Seems like not worth the trouble.
 
@@ -70,3 +71,27 @@ Either i need to switch to linux for developing this or move on the parsing http
 I see that i when i add more than -c 100 in the wrk tool, i am exceeding time around 7ms. i.e i need to optimize for concurrency
 I see cpu is maxing out in test, i need to use profiler for go and see how to optimize it.
 I see a tool called pprof which can give be a profiler for my go app. Let's work on it next.
+
+update: I decreased the time, the issue is the wrk is creating long lived tcp connections i.e it is 
+using single tcp connection to send multiple http requests, where as i am not handling it properly. After 
+fixing that upto 200 simultaneous connections i was able to handle at 1ms/request.
+But still i faced write errors when i use 400 connections.
+Turns out issue is, now the connections are long lived and i am using a go routine pool of 32, i can only process
+32 connections, since handleConnection for each connection only returns at the end of the test. Now i increased go routine pool coun to 600
+Now i have comparable perf to fasthttp.
+
+wrk -H 'Host: localhost' -H 'Accept: text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7' -H 'Connection: keep-alive' --latency -d 15 -c 512 --timeout 8 -t 4 http://localhost:8080
+Running 15s test @ http://localhost:8080
+  4 threads and 512 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     8.16ms   25.01ms 633.33ms   98.87%
+    Req/Sec    18.96k     3.73k   35.32k    70.17%
+  Latency Distribution
+     50%    4.75ms
+     75%    8.43ms
+     90%   13.13ms
+     99%   40.80ms
+  1129370 requests in 15.10s, 82.93MB read
+  Socket errors: connect 0, read 0, write 471, timeout 0
+Requests/sec:  74811.91
+Transfer/sec:      5.49MB

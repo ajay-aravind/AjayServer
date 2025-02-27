@@ -1,6 +1,11 @@
 package main
 
-import "runtime"
+import (
+	"log"
+	_ "net/http/pprof"
+	"os"
+	"runtime/pprof"
+)
 
 const PortToBind = 8080
 
@@ -13,12 +18,25 @@ const AddressToBind = "0.0.0.0"
 const ProcessCount = 10
 
 // go Routine pool count
-var WorkerPoolCount int = runtime.NumCPU()
+// since we are testing with long lived connections it doesn't make sense to handle multiple connections in single go routine
+// we can try to handle multiple go http requests in fixed pool of go routines though. This is still something to do
+var WorkerPoolCount int = 600
 
 const Protocol = "tcp"
 
-func main() {
+const BufferPoolSize int = 20 * 1024 //4 x 200 x 1024 x 1024 B =  800MB
 
+func main() {
+	// Start profiling
+	f, err := os.Create("myprogram.prof")
+	if err != nil {
+		log.Println("cloud not create profile")
+	}
+
+	err = pprof.StartCPUProfile(f)
+	if err != nil {
+		log.Println("Couldn't start profiling")
+	}
 	// single thread vs multi thread
 	// when using single process i see that 1000 request with 50 clients taking average of 9 seconds
 	// with 5 worker threads, i see that it is taking 5 seconds
@@ -28,6 +46,7 @@ func main() {
 
 func singleThreadedMain(PortToBind int, AddressToBind string, Protocol string) {
 	tasksChannel := InitGoRoutinePool(WorkerPoolCount)
+	InitBufferPools(BufferPoolSize)
 	var server listener = listener{port: PortToBind, protocol: Protocol, address: AddressToBind}
 	server.startWorker(tasksChannel)
 }

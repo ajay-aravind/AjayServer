@@ -3,9 +3,10 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"io"
+	"log"
 	"net"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -13,15 +14,8 @@ import (
 
 type Task struct {
 	id           int
-	connection   net.Conn
+	connection   *net.Conn
 	readDuration chan int64
-}
-
-// Pool for reusing buffers
-var bufferPool = sync.Pool{
-	New: func() interface{} {
-		return new(bytes.Buffer) // Preallocate buffer
-	},
 }
 
 // Pool for reusing bufio.Reader and its buffer
@@ -34,7 +28,8 @@ var readerPool = sync.Pool{
 // Worker function that processes tasks
 func worker(id int, tasks <-chan Task) {
 	for task := range tasks {
-		handleConnection(task.connection, task.readDuration, id)
+		// log.Println("starting to handle task:" + strconv.Itoa(task.id))
+		handleConnection(task.connection, task.readDuration, task.id)
 	}
 }
 
@@ -45,42 +40,60 @@ func createWorkerPool(workerCount int, tasks <-chan Task) {
 	}
 }
 
+func InitBufferPools(poolSize int) {
+	for i := 0; i < poolSize; i++ {
+		// Create a new buffer and put it into the pool.
+		readerPool.Put(bufio.NewReaderSize(nil, 4096))
+	}
+	log.Printf("Preallocated %d buffers of %d bytes each\n", poolSize, 4096)
+}
+
 func InitGoRoutinePool(poolCount int) chan Task {
 	tasks := make(chan Task, poolCount)
 	createWorkerPool(poolCount, tasks)
 	return tasks
 }
 
-func handleConnection(conn net.Conn, readDuration chan int64, goRoutineId int) {
-	defer conn.Close()
-	//todo understand what is this setting and why this is getting used,
-	// prior to using this i am getting EOF errors, when i try to benchmark my server with wrk aginst fasthttp
-	conn.SetReadDeadline(time.Now().Add(30 * time.Second))
+func handleConnection(connPointer *net.Conn, readDuration chan int64, conectionId int) {
 
-	// Get a reused bufio.Reader from the pool
-	reader := readerPool.Get().(*bufio.Reader)
-	reader.Reset(conn)           // Reset reader for new connection
-	defer readerPool.Put(reader) // Return reader to pool
+	conn := *connPointer
 
-	// Get a reused buffer from the pool
-	buf := bufferPool.Get().(*bytes.Buffer)
-	buf.Reset()               // Clear the buffer
-	defer bufferPool.Put(buf) // Return buffer to pool
+	// Ensure conn is a *net.TCPConn
+	tcpConn, ok := conn.(*net.TCPConn)
+	if ok {
+		// Disable Nagle's Algorithm (send packets immediately)
+		tcpConn.SetNoDelay(true)
+		// log.Printf("Disabled nagles algorithm on the connection")
+	}
 
-	// out the below two, ideally readBytes should give less latency
-	// but for some weird reason i am seeing both performe almost equally
-	duration := readBytes(reader)
-	readDuration <- duration.Microseconds()
-	// readString(reader)
+	for {
+		// Get a reused bufio.Reader from the pool
+		reader := readerPool.Get().(*bufio.Reader)
+		reader.Reset(conn) // Reset reader for new connection
 
-	// Send a simple HTTP response
-	response := "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\n\r\nHello World!"
-	conn.Write([]byte(response))
+		// out the below two, ideally readBytes should give less latency
+		// but for some weird reason i am seeing both performe almost equally
+		err := readBytes(reader)
+		if err != nil {
+			conn.Close()
+			return
+		}
+
+		// Send a simple HTTP response
+		response := "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\n\r\nHello World!"
+		_, err = conn.Write([]byte(response))
+		if err != nil {
+			log.Println("Issue while writing the response" + err.Error())
+		} else {
+			// log.Println("wrote response bytes:" + strconv.Itoa(n) + "connection id:" + strconv.Itoa(conectionId))
+		}
+
+		conn.SetReadDeadline(time.Now().Add(10 * time.Second))
+		readerPool.Put(reader)
+	}
 }
 
-func readBytes(reader *bufio.Reader) time.Duration {
-	start := time.Now() // Start the stopwatch
-
+func readBytes(reader *bufio.Reader) error {
 	// output buffer
 	var buf bytes.Buffer
 
@@ -89,14 +102,19 @@ func readBytes(reader *bufio.Reader) time.Duration {
 		bytesOfLine, err := reader.ReadBytes('\n')
 		if err != nil {
 			if err == io.EOF {
-				fmt.Println("client closed connection: EOF")
+				log.Println("client closed connection: EOF")
+			} else if os.IsTimeout(err) {
+				log.Println("Read timeout exceeded, closing connection")
 			} else {
-				fmt.Println("Error reading request:", err)
+				log.Println("Error reading request:", err)
 			}
-			return time.Nanosecond
+			return err
+		} else {
+			// log.Println("read one line")
 		}
 		// Stop reading when an empty line is found (end of headers)
 		if bytes.Equal(bytesOfLine, endOfRequestLine) {
+			// log.Println("request read end")
 			break
 		}
 
@@ -104,10 +122,9 @@ func readBytes(reader *bufio.Reader) time.Duration {
 		buf.Write(bytesOfLine)
 	}
 	// Print the raw request
-	// fmt.Println("Raw HTTP Request:")
-	// fmt.Println(buf.String())
-	elapsed := time.Since(start)
-	return elapsed
+	// log.Println("Raw HTTP Request:")
+	// log.Println(buf.String())
+	return nil
 }
 
 func readString(reader *bufio.Reader) {
@@ -117,7 +134,7 @@ func readString(reader *bufio.Reader) {
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Println("Error reading request:", err)
+			log.Println("Error reading request:", err)
 			return
 		}
 
@@ -129,6 +146,6 @@ func readString(reader *bufio.Reader) {
 	}
 	// Print the raw request
 	// for _, line := range requestLines {
-	// 	fmt.Println(line)
+	// 	log.Println(line)
 	// }
 }
