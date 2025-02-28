@@ -1,0 +1,34 @@
+Http 1.0
+
+1. New TCP connection for every by default( may connection-alive header can be used?)
+2. Buffering(trander-encoding: chuncked didn't exist)
+3. no multi-homed websites (Host header isn't mandatory in request)
+
+
+Http 1.1
+
+  1. Each TCP connection by default is long living
+  2. Streaming with chuncked transfer
+  3. Pipelining ( disabled by default)
+  4. Proxying & multi-homed websites
+
+Http 2
+  1. Compression for both headers and body(but disabled due to attack)
+  2. Multiplexing multiple http requests on single connection
+  3. Secure by default
+  4. Protocol Negotiation during TLS (NPN/ALPN)
+  5. High cpu usage
+
+HTTP over QUIC(HTTP/3)
+
+1. Replace TCP with QUIC(UDP with Congestion control)
+2. All http/2 features. 
+3. fixes TCP head of line blocking problem
+4. compression of headers and body
+5. High cpu usage
+6. Ip fragmentation is a problem
+
+Quic is a transport level protocol built on top udp, which maintains streams and have congestion control. This manages all the streams and congestion control. So really except for headers compression part
+http3 in itself isn't a big change compared to http2. It's the QUIC over UDP, that makes the difference compare to TCP.
+
+
