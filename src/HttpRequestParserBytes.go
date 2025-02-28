@@ -22,12 +22,12 @@ func (firstLine RequestFirstLine) ToString() string {
 }
 
 func (request HttpRequestParserBytes) ParseHttpRequest(requestBytes []byte) HttpRequest {
-	firstLine, err := request.parseHttpRequestFirstLine(requestBytes)
+	_, err := request.parseHttpRequestFirstLine(requestBytes)
 	if err != nil {
 		log.Println("error in reading first line of request: ", err)
 	}
 
-	log.Println("correctly parse first line of request:" + firstLine.ToString())
+	// log.Println("correctly parse first line of request:" + firstLine.ToString())
 	return HttpRequest{}
 }
 

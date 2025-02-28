@@ -100,3 +100,25 @@ From perf profiles i can still see that the conn.Write call is taking lot of tim
 I can compare this with fast server profile later. If that also has similar issue then it is platform issue, nothing much that i can do.
 
 For now i will move my focus to parsing the http request and sending the proper response.
+
+
+After parsing the first line of http request:
+ajreddy@CPC-ajred-NFF4D:/mnt/c/Users/ajreddy$ wrk -H 'Host: localhost' -H 'Accept: text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7' -H 'Connection: keep-alive' --latency -d 15 -c 512 --timeout 8 -t 4 http://localhost:8080
+Running 15s test @ http://localhost:8080
+  4 threads and 512 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     6.61ms    6.70ms 247.41ms   89.48%
+    Req/Sec    17.94k     3.79k   31.20k    70.36%
+  Latency Distribution
+     50%    4.96ms
+     75%    8.90ms
+     90%   13.57ms
+     99%   25.59ms
+  1062325 requests in 15.09s, 78.01MB read
+Requests/sec:  70421.38
+Transfer/sec:      5.17MB
+Exactly not sure, why it came down. I believe it's due to the fact that i redirected output to file. 
+One more point to note is that, I am still seeing few write errors like around ~100 range. This even i saw for fasthttp with my machine. So will don't consider it for now.
+
+Next task is to parse http request. I will understand the support from fastHttp and see what methods i should support for parsing and writing response.
+After that i will laydown my highlevel classes and interfaces for the same. Then i need to code.

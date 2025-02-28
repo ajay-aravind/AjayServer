@@ -114,7 +114,7 @@ func readBytes(reader *bufio.Reader) error {
 		}
 		// Stop reading when an empty line is found (end of headers)
 		if bytes.Equal(bytesOfLine, endOfRequestLine) {
-			log.Println("request read end")
+			// log.Println("request read end")
 			request := HttpRequest{}
 			request.ParseHttpRequest(buf.Bytes())
 			break
