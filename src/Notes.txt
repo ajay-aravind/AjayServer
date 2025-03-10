@@ -122,3 +122,14 @@ One more point to note is that, I am still seeing few write errors like around ~
 
 Next task is to parse http request. I will understand the support from fastHttp and see what methods i should support for parsing and writing response.
 After that i will laydown my highlevel classes and interfaces for the same. Then i need to code.
+
+
+I've defined the types for parsing and setting http request and response. 
+Also looked at different type of request methods and request compressions.
+From the list that fast http handles, I still needs to add some features. 
+
+TLS support
+Streaming & Large File Handling
+Supports limiting concurrent requests to prevent overload.
+Can manually configure CORS headers for cross-origin requests.
+Supports easy JSON encoding/decoding with Go’s encoding/json.

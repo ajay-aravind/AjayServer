@@ -1,0 +1,144 @@
++Cookie
+    CreateCookie
+    Copy
+    GetDomain()
+    GetExpiry()
+    GetHttpOnly()
+    GetKey()
+    GetMaxAge()
+    ParseCookieString()
+    ParseCookieBytes()
+    IsPartitioned() // if it's partitioned cookie, it's set per top level domain. If abc.com loads a thirdparty script from cdn.com and cdn.com set's a cookie, usedid=123, and
+    If i got to antoerh website xyz.com and loads same script cdn.com and cdn.com set's a cookie, usedid=456, then these cookies will be seperate. Even if the cookie and domain which 
+    set them are same i.e usedid, cdn.com, but top level domain in which the cdn.com is loaded is different. First cookie set in abc.com while second cookie set in xyz.com, so these two
+    cookies even though they are same, they act like 2 different cookies. now cdn.com can't track users across sites.
+    // It's more of a browser feature, don't really matter in backend i guess apart from the parsing part.
+    Reset()
+    SameSite() // Strict, lax, None
+    //strict, send only with requests orginating for this domain i.e only when user trying to access this domain 
+    // lax, send cookies even if the user redirected from other site. user clicked this domain link from other domain tab. But 
+    not allowed to send, when a other domain web page sending ajax, post requests to this domain
+    // none, Cookies will always be sent with cross-site requests. Need secure to send the requests.
+    IsSecure() // Only send cookie via https, don't send via http requests
+    SetDomain()
+    SetExpiry()
+    setHttonly()
+    SetKey()
+    SetMaxAge()
+    SetParitioned()
+    setPath() // The Path attribute in cookies determines which URL paths on a website can access the cookie.
+    SetSameSite()
+    SetSecure()
+    SetValue()
+    ToString()
+    GetValue()
+    WriteTo()
++Request
+    +NewRequest()
+    +GetBody()
+    +BodyDecompressGzip() // unzip if body is gzipped. 'Content-Encoding: gzip'
+    +BodyInflate() // May be not needed
+    +BodyDecompressBrotile()
+    +CopyTo()
+    +GetHost()
+    +IsMayContinueRequest()
+    +IsMultipartFormRequest()
+    +GetPostArgs()
+    +GetRequestURI()
+    +ToString()
+    +GetUri()
+    +WriteTo()
+    +Error // set error?
+    +GetFormFile()
+    +GetFormValue()
+    +GetHost()
+    +IsConnect()
+    +IsDelete()
+    +IsGet()
+    +IsHead()
+    +IsOptions()
+    +IsPatch()
+    +IsPost()
+    +IsPut()
+    +IsTls()
+    +GetLocalAddr
+    +GetLocalIp()
+    +GetMethod()
+    +GetRequestPath()
+    +GetPostBody()
+    +GetQueryArgs()
+    +GetRemoteAddress
+    +getRemoteIP()
+    +GetRequestURI()
+    +ToString()
+    +GetContentType()
+    +GetURI()
+    +GetUserAgent()
+    +WriteResponse()
++Response
+    +SetRedirect()
+    +AppendBody
+    +AppendBodyString()
+    +CopyTo()
+    +SendFile()
+    +SetHost()
+    +SetNotFoundCode()
+    +SetNotModifiedCode()
+    +SetBody()
+    +SetContentType()
+    +setStatusCode()
+    +ToString()
+    +Write()
+    +writeGzip()
+    +WriteBrotile()
++RequestHeaders
++ResponseHeaders
+    +Add()
+    +SetConnectionClose()
+    +SetConnectionUpgrade()
+    +SetContentEncoding()
+    +SetContentLength() //Negative content-length sets 'Transfer-Encoding: chunked' header.
+    +setContentType()
+    +SetCookie()
+    +CopyTo()
+    +del()
+    +DelAllCookies()
+    +Peek()
+    +PeekAll()
+    +PeekCookie()
+    +Get/Set Protocol()
+    +GetServerHeader()
+    +SetCanonical
+    +SetLastModified()
+    +SetNoDefaultContentType()
+    +SetProtocol()
+    +SetStatusCode()
+    +SetStatusMessage()
+    +AddTrailer() // Add Trailed RequestHeaders, this is only supported in  chunked transfer encoding
+
+
+I think cookie, needs to be its own class. Though it's send as part of header, logically it's need be handled seperately. 
+Request and request headers, response and response headers needs to be seperate classes anyway, but should they be 4 seperate classes or 2 seperate classes?
+Ideally, we only read from request and write/read to response, so may request/request headers can be a parent type while response/response headers can derive from them.
+
+since Go doesn't have a inheritance, like extending classes. But go does have type embedding.
+so
+
+HttpResponse{
+    httpRequest HttpRequest
+    // all setters behaviour which is missing above
+}
+
+HttpRequest{
+    //all the get behaviours and decompress behaviours metioned above
+}
+
+HttpResponseHeaders{
+    httpResponseHeaders HttpResponseHeaders
+    //all setters behaviour which is missing in response headers
+}
+
+HttpResponseHeaders{
+    //all get behaviours mentioned above
+}
+

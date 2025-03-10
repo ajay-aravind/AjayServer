@@ -1,0 +1,31 @@
+Although i am not planning to parse the request body. But it's is good to know thing.
+
+Major content-type list:
+
+Content-Type	Use Case
+application/x-www-form-urlencoded	Basic form submissions
+application/json	APIs, web & mobile apps
+text/plain	Logging, plain text messaging
+application/xml	Legacy SOAP APIs
+multipart/form-data	File uploads, mixed data
+application/octet-stream	Raw binary files
+application/gzip / application/zstd	Compressed uploads
+application/ndjson	Streaming JSON
+application/graphql	GraphQL APIs
+message/rfc822	Sending email data
+application/protobuf	gRPC, high-speed APIs
+application/x-msgpack	Compact data format for APIs
+
+Compression i need to support
+Major content-encoding list:
+Gzip,
+Brotli,
+identity, // plain
+
+BodyDecompressor{
+    DeCompress(byte[] requestBody, compressionType type) byte[] decompressedRequestBody;
+}
+
+BodyCompressor{
+    Compress(bytep[] responseBody, compressionType type) byte[] compressedResponseBody;
+}

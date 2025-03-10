@@ -8,7 +8,10 @@ import (
 )
 
 type HttpRequestParserBytes struct {
-	Headers [10]string
+	RequestFirstLine RequestFirstLine
+	Headers          [10]string
+	RequestLines     [][]byte
+	RequestBody      []byte
 }
 
 type RequestFirstLine struct {
@@ -21,8 +24,8 @@ func (firstLine RequestFirstLine) ToString() string {
 	return "HttpMethod:" + firstLine.HttpMethod + ", URI:" + firstLine.URI + ", HttpVersion: " + firstLine.HttpVersion
 }
 
-func (request HttpRequestParserBytes) ParseHttpRequest(requestBytes []byte) HttpRequest {
-	_, err := request.parseHttpRequestFirstLine(requestBytes)
+func (parser HttpRequestParserBytes) ParseHttpRequest(requestBytes []byte) HttpRequest {
+	_, err := parser.parseHttpRequestFirstLine(requestBytes)
 	if err != nil {
 		log.Println("error in reading first line of request: ", err)
 	}
@@ -31,22 +34,31 @@ func (request HttpRequestParserBytes) ParseHttpRequest(requestBytes []byte) Http
 	return HttpRequest{}
 }
 
-func (request HttpRequestParserBytes) parseHttpRequestFirstLine(requestBytes []byte) (RequestFirstLine, error) {
+func (parsor HttpRequestParserBytes) parseHttpRequestFirstLine(requestBytes []byte) (RequestFirstLine, error) {
 	// Split the first line from the request by \r\n (CRLF)
 	// HTTP request lines are typically ended with \r\n (carriage return and newline)
-	dummyResult := RequestFirstLine{"", "", ""}
-	lines := bytes.SplitN(requestBytes, []byte("\r\n"), 2)
-	if len(lines) < 1 {
+	defaultResult := RequestFirstLine{"", "", ""}
+	parsor.RequestLines = bytes.SplitN(requestBytes, []byte("\r\n"), 2)
+	if len(parsor.RequestLines) < 1 {
 		log.Println("invalid HTTP request")
-		return dummyResult, errors.New("invalid HTTP request")
+		return defaultResult, errors.New("invalid HTTP request")
 	}
 
 	// Split the first line by spaces (to get method, URL, and version)
-	parts := strings.Fields(string(lines[0]))
+	parts := strings.Fields(string(parsor.RequestLines[0]))
 	if len(parts) != 3 {
 		log.Println("invalid HTTP request line")
-		return dummyResult, errors.New("invalid HTTP request line")
+		return defaultResult, errors.New("invalid HTTP request line")
 	}
 
+	parsor.RequestFirstLine = RequestFirstLine{parts[0], parts[1], parts[2]}
 	return RequestFirstLine{parts[0], parts[1], parts[2]}, nil
+}
+
+func (parsor HttpRequestParserBytes) parseHttpRequestHeaders() error {
+	return errors.New("not implemented yet")
+}
+
+func (parsor HttpRequestParserBytes) parseHttpRequestBody() error {
+	return errors.New("not implemented yet")
 }

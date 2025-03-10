@@ -1,0 +1,40 @@
+POST /submit HTTP/1.1
+Host: example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 27
+
+name=John&age=30&city=NY
+
+
+This is simplest form.
+
+POST /api/user HTTP/1.1
+Host: example.com
+Content-Type: application/json
+Content-Length: 49
+
+{
+  "name": "John",
+  "age": 30,
+  "city": "NY"
+}
+
+Again simple
+
+
+POST /upload HTTP/1.1
+Host: example.com
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="name"
+
+John
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="image.jpg"
+Content-Type: image/jpeg
+
+(binary image data here)
+------WebKitFormBoundary--
+
+This feels like some work. Different from what we expect in a normal, http request.
