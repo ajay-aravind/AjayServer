@@ -126,6 +126,8 @@ After that i will laydown my highlevel classes and interfaces for the same. Then
 
 I've defined the types for parsing and setting http request and response. 
 Also looked at different type of request methods and request compressions.
+I still need to figure out byte[] vs string and custom buffers vs strings to pass around request and response. Would it effect perf that much or i can rewrite parts of it later?
+
 From the list that fast http handles, I still needs to add some features. 
 
 TLS support
