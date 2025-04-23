@@ -7,9 +7,11 @@ import (
 	"log"
 	"net"
 	"os"
-	"strings"
+	"strconv"
 	"sync"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type Task struct {
@@ -28,7 +30,7 @@ var readerPool = sync.Pool{
 // Worker function that processes tasks
 func worker(id int, tasks <-chan Task) {
 	for task := range tasks {
-		// log.Println("starting to handle task:" + strconv.Itoa(task.id))
+		// logrus.Debug("starting to handle task:" + strconv.Itoa(task.id))
 		handleConnection(task.connection, task.readDuration, task.id)
 	}
 }
@@ -83,9 +85,9 @@ func handleConnection(connPointer *net.Conn, readDuration chan int64, conectionI
 		response := "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\n\r\nHello World!"
 		_, err = conn.Write([]byte(response))
 		if err != nil {
-			log.Println("Issue while writing the response" + err.Error())
+			logrus.Debug("Issue while writing the response" + err.Error())
 		} else {
-			// log.Println("wrote response bytes:" + strconv.Itoa(n) + "connection id:" + strconv.Itoa(conectionId))
+			// logrus.Debug("wrote response bytes:" + strconv.Itoa(n) + "connection id:" + strconv.Itoa(conectionId))
 		}
 
 		conn.SetReadDeadline(time.Now().Add(10 * time.Second))
@@ -96,58 +98,77 @@ func handleConnection(connPointer *net.Conn, readDuration chan int64, conectionI
 func readBytes(reader *bufio.Reader) error {
 	// output buffer
 	var buf bytes.Buffer
+	var request HttpRequest
 
 	for {
 		//todo does this needs to be "\n" or "\r\n" or something like that, needs to decide
 		bytesOfLine, err := reader.ReadBytes('\n')
 		if err != nil {
 			if err == io.EOF {
-				log.Println("client closed connection: EOF")
+				logrus.Debug("client closed connection: EOF")
 			} else if os.IsTimeout(err) {
-				log.Println("Read timeout exceeded, closing connection")
+				logrus.Debug("Read timeout exceeded, closing connection")
 			} else {
-				log.Println("Error reading request:", err)
+				logrus.Debug("Error reading request:", err)
 			}
 			return err
 		} else {
-			// log.Println("read one line")
+			// logrus.Debug("read one line")
 		}
 		// Stop reading when an empty line is found (end of headers)
 		if bytes.Equal(bytesOfLine, endOfRequestLine) {
-			// log.Println("request read end")
-			request := HttpRequest{}
-			request.ParseHttpRequest(buf.Bytes())
+			logrus.Debug("Done reading request headers")
+			logrus.Debug("HTTP Request till now:")
+			logrus.Debug(buf.String())
+
+			parser := HttpRequestParserString{}
+			request = parser.ParseTillRequestHeaders(buf.Bytes())
 			break
 		}
 
 		// Collect the lines of the request
 		buf.Write(bytesOfLine)
+		logrus.Trace("bytes so far: ", string(bytesOfLine))
 	}
 	// Print the raw request
-	// log.Println("Raw HTTP Request:")
-	// log.Println(buf.String())
+
+	err := request.ValidateRequestTillHeaders()
+
+	if err != nil {
+		logrus.Error("Invalid request")
+		return nil
+	}
+
+	if request.IsRequestAllowedToHaveBody() {
+		logrus.Debug("Request may have content")
+		contentLength, err := strconv.Atoi(request.Headers["content-length"])
+		if err != nil {
+			log.Fatal("error in formatting content-lenght")
+		}
+
+		var body []byte
+		if contentLength > 0 {
+			body = readRequestBody(reader, contentLength)
+		}
+		parser := HttpRequestParserString{}
+		parser.parseHttpRequestBody(body, &request)
+		request.PrintContent()
+	}
+
+	// call the custom handler provided by developer
+
 	return nil
 }
 
-func readString(reader *bufio.Reader) {
+func readRequestBody(reader *bufio.Reader, contentLength int) []byte {
 
-	var requestLines []string
-
-	for {
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			log.Println("Error reading request:", err)
-			return
-		}
-
-		if line == "\r\n" {
-			break
-		}
-		// Collect the lines of the request
-		requestLines = append(requestLines, strings.TrimSpace(line))
+	logrus.Debug("started reading request content")
+	contentBuf := make([]byte, contentLength)
+	_, err := io.ReadFull(reader, contentBuf)
+	if err != nil {
+		logrus.Warn("Error while reading content: ", err)
 	}
-	// Print the raw request
-	// for _, line := range requestLines {
-	// 	log.Println(line)
-	// }
+	logrus.Debug("Read request content bytes: ", contentLength)
+	logrus.Debug("RequestContent: ", string(contentBuf))
+	return contentBuf
 }

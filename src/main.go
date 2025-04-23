@@ -1,10 +1,11 @@
 package main
 
 import (
-	"log"
 	_ "net/http/pprof"
 	"os"
 	"runtime/pprof"
+
+	"github.com/sirupsen/logrus"
 )
 
 const PortToBind = 8080
@@ -27,15 +28,17 @@ const Protocol = "tcp"
 const BufferPoolSize int = 20 * 1024 //4 x 200 x 1024 x 1024 B =  800MB
 
 func main() {
+	logrus.SetFormatter(&logrus.JSONFormatter{}) // JSON logging
+	logrus.SetLevel(logrus.TraceLevel)
 	// Start profiling
 	f, err := os.Create("myprogram.prof")
 	if err != nil {
-		log.Println("cloud not create profile")
+		logrus.Trace("cloud not create profile")
 	}
 
 	err = pprof.StartCPUProfile(f)
 	if err != nil {
-		log.Println("Couldn't start profiling")
+		logrus.Trace("Couldn't start profiling")
 	}
 	// single thread vs multi thread
 	// when using single process i see that 1000 request with 50 clients taking average of 9 seconds
