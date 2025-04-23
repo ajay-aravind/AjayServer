@@ -130,8 +130,14 @@ I still need to figure out byte[] vs string and custom buffers vs strings to pas
 
 From the list that fast http handles, I still needs to add some features. 
 
-TLS support
+TLS support [todo]
 Streaming & Large File Handling
 Supports limiting concurrent requests to prevent overload.
 Can manually configure CORS headers for cross-origin requests.
-Supports easy JSON encoding/decoding with Go’s encoding/json.
+Supports easy JSON encoding/decoding with Go’s encoding/json. [done]
+added code to read the request content and parse for form url encode and multipart form data and json content types [done]
+need to check perf after doing this[todo]
+Need to add interface support defined in TypesToAdd.txt[todo]
+  1. Add support to add and delete cookies
+  2. Add support to read properties from request
+  3. Add support to form response and send
