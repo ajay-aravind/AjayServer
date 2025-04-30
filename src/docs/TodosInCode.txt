@@ -1,0 +1,11 @@
+func (c *Cookie) SetPath(path string, requestLocation string) {
+	//todo: is this needed?
+	if path == "" {
+		path = requestLocation
+	}
+
+	c.path = path
+}
+
+if no path is set, then the request path is the path. While sending we don't need to send to the browser, browser understands this. While server getting the cookie also it is not needed
+So should i set the path = requestLocation?

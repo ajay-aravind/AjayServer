@@ -41,6 +41,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -102,8 +103,19 @@ func NewCookie(
 		return nil, err
 	}
 
-	cookie.SetPath(path, requestLocation)
-	cookie.SetDomain(domain)
+	// empty domain is allowed
+	err = cookie.SetDomain(domain)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = cookie.SetPath(path, requestLocation)
+
+	if err != nil {
+		return nil, err
+	}
+
 	cookie.SetHttpOnly(httpOnly)
 	cookie.SetSecure(isSecure)
 	return cookie, err
@@ -272,17 +284,44 @@ func (c *Cookie) SetValue(value string) error {
 	return nil
 }
 
-func (c *Cookie) SetPath(path string, requestLocation string) {
-	// Accept empty path as valid (defaults to "/")
+func (c *Cookie) SetPath(path string, requestLocation string) error {
+	//todo: is this needed?
 	if path == "" {
 		path = requestLocation
 	}
+
+	if !isValidCookiePath(path) {
+		return errors.New("Invalid cookie path")
+	}
+
 	c.path = path
+	return nil
 }
 
-func (c *Cookie) SetDomain(domain string) {
-	// Optional validation: domain should not contain spaces
+func isValidDomain(domain string) bool {
+	// Regex to validate domain names (as discussed previously)
+	var domainRegex = `^(localhost|127\.0\.0\.1|\[::1\]|(\.?[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,})$`
+	re := regexp.MustCompile(domainRegex)
+	return re.MatchString(domain)
+}
+
+func isValidCookiePath(path string) bool {
+	pathRegex := `^/(?:(?:(?:[a-zA-Z0-9\-._~!$&'()*+,;=:@]|%[0-9a-fA-F]{2})/?)*)?$`
+	re := regexp.MustCompile(pathRegex)
+	return re.MatchString(path)
+}
+
+// todo: Cookie domain must match or be a parent of the request's host (e.g., you cannot set a cookie for example.com from evil.com)
+func (c *Cookie) SetDomain(domain string) error {
+	if len(domain) <= 0 {
+		return nil
+	}
+	if !isValidDomain(domain) {
+		return errors.New("invalid domain name")
+	}
+
 	c.domain = domain
+	return nil
 }
 
 func (c *Cookie) SetExpiry(expiry time.Time) error {

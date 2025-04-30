@@ -162,3 +162,104 @@ func TestParseCookieBytesSetDefaultPath(t *testing.T) {
 		t.Errorf("cookie path is not set to request location")
 	}
 }
+
+func TestParseCookieBytesValidatePath(t *testing.T) {
+	validPaths := []string{
+		"/",
+		"/path",
+		"/path/",
+		"/path/to/resource",
+		"/path/with-hyphen",
+		"/path/with.dot",
+		"/path/with_underscore",
+		"/path/with~tilde",
+		"/path/with!exclamation",
+		"/path/with$dollar",
+		"/path/with&amp;ampersand",
+		"/path/with'apostrophe",
+		"/path/with(parentheses)",
+		"/path/with*asterisk",
+		"/path/with+plus",
+		"/path/with,comma",
+		"/path/with;semicolon",
+		"/path/with=equals",
+		"/path/with:colon",
+		"/path/with@at",
+		"/path/with%20space", // Percent-encoded space
+		"/p%61th",            // Percent-encoded 'a'
+	}
+
+	for _, path := range validPaths {
+		_, err := ParseCookieBytes([]byte("key=!@#$%^&*(); value=abc;path="+path), "/users")
+		if err != nil {
+			t.Errorf("cookie path should be parse without any issues")
+		}
+	}
+
+	cookie := Cookie{}
+
+	invalidPaths := []string{
+		"relative/path",
+		"/path with space",
+		"/path%",
+		"/path%G0",
+		"//path",
+		"/path?query=value",
+		"/path#fragment",
+		" path/leading-space",
+	}
+
+	for _, path := range invalidPaths {
+		err := cookie.SetPath(path, "/")
+		if err == nil {
+			t.Errorf("cookie path should throw validation error")
+		}
+	}
+}
+
+func TestParseCookieBytesValidateDomain(t *testing.T) {
+	var validDomains = []string{
+		"example.com",
+		".example.com",
+		"sub.example.com",
+		"example.co.uk",
+		"localhost",
+		"127.0.0.1",
+		"[::1]",
+		"xn--bcher-kva.example",
+		"my-domain123.org",
+		"EXAMPLE.COM",
+		"", // Empty string, because by default cookie domain is request location
+	}
+
+	cookie := Cookie{}
+	for _, domain := range validDomains {
+		err := cookie.SetDomain(domain)
+		if err != nil {
+			t.Errorf("cookie domain should parse without any issues:" + domain)
+		}
+	}
+
+	var invalidDomains = []string{
+		"example",            // TLD-only
+		".com",               // Public suffix only
+		"-invalid.com",       // Starts with hyphen
+		"example..com",       // Double dot
+		"ex ample.com",       // Space in domain
+		"example.com.",       // Trailing dot
+		"http://example.com", // Scheme included
+		"/example.com",       // Slash included
+		"example,com",        // Comma separator
+		"@example.com",       // Invalid char "@"
+		"example!.com",       // Special character "!"
+		"1234",               // Number, not a valid domain
+		"256.300.999.1",      // Invalid IP address
+	}
+
+	for _, domain := range invalidDomains {
+		err := cookie.SetDomain(domain)
+		if err == nil {
+			t.Errorf("cookie domain parsing should fail: " + domain)
+		}
+	}
+}
