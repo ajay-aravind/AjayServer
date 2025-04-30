@@ -200,7 +200,7 @@ func (parser HttpRequestParserString) parseMultipartBody(body []byte, params map
 			break
 		}
 		partData, _ := io.ReadAll(part)
-		logrus.Trace("Part: %s = %s\n", part.FormName(), string(partData))
+		logrus.Trace("Part: ", part.FormName(), "partData: ", string(partData))
 		formData[part.FormName()] = string(partData)
 	}
 
