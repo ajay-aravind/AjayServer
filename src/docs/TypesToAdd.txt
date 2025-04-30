@@ -69,6 +69,17 @@
     +Write()
     +writeGzip()
     +WriteBrotile()
+    +GetHost()
+    +IsConnect()
+    +IsDelete()
+    +IsGet()
+    +IsHead()
+    +IsOptions()
+    +IsPatch()
+    +IsPost()
+    +IsPut()
+    +GetURI()
+    +GetMethod()
 +RequestHeaders
 +ResponseHeaders
     +Add(key string, value string) //Add adds the given 'key: value' header.

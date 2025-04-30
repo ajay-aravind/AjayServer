@@ -74,22 +74,11 @@ const (
 +SetStatusCode()
 +SetStatusMessage()
 +AddTrailer() // Add Trailed RequestHeaders, this is only supported in  chunked transfer encoding
-+GetHost()
-+IsConnect()
-+IsDelete()
-+IsGet()
-+IsHead()
-+IsOptions()
-+IsPatch()
-+IsPost()
-+IsPut()
 +IsTls()
 +GetLocalAddr
 +GetLocalIp()
-+GetMethod()
 +GetRequestPath()
 +GetContentType()
-+GetURI()
 +GetUserAgent()*/
 
 type Headers struct {
