@@ -34,6 +34,19 @@ Cookie
     ToString()
     GetValue()
     WriteTo()
+
+
+// while client sending multiple cookies will be sent in same header
+GET /profile HTTP/1.1
+Host: example.com
+Cookie: session_id=abc123; theme=dark; logged_in=true
+
+// while server setting cookies each cookie will have it's own header
+HTTP/1.1 200 OK
+Set-Cookie: session_id=abc123; Path=/; HttpOnly
+Set-Cookie: theme=dark; Path=/; Max-Age=3600
+Set-Cookie: logged_in=true; Path=/
+
 */
 
 package main

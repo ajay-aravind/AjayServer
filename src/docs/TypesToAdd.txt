@@ -40,40 +40,18 @@
     +BodyInflate() // May be not needed
     +BodyDecompressBrotile()
     +CopyTo()
-    +GetHost()
     +IsMayContinueRequest()
     +IsMultipartFormRequest()
     +GetPostArgs()
-    +GetRequestURI()
     +ToString()
-    +GetUri()
     +WriteTo()
     +Error // set error?
     +GetFormFile()
     +GetFormValue()
-    +GetHost()
-    +IsConnect()
-    +IsDelete()
-    +IsGet()
-    +IsHead()
-    +IsOptions()
-    +IsPatch()
-    +IsPost()
-    +IsPut()
-    +IsTls()
-    +GetLocalAddr
-    +GetLocalIp()
-    +GetMethod()
-    +GetRequestPath()
     +GetPostBody()
-    +GetQueryArgs()
     +GetRemoteAddress
     +getRemoteIP()
-    +GetRequestURI()
     +ToString()
-    +GetContentType()
-    +GetURI()
-    +GetUserAgent()
     +WriteResponse()
 +Response
     +SetRedirect()
@@ -93,28 +71,51 @@
     +WriteBrotile()
 +RequestHeaders
 +ResponseHeaders
-    +Add()
-    +SetConnectionClose()
+    +Add(key string, value string) //Add adds the given 'key: value' header.
+    +Set(key string, value string) // adds/updates the give header
+    +SetConnectionClose() //sets 'Connection: close' header
+    +GetConnectionClose() bool // gets if 'Connection: close' header is present
+    +GetConnectionUpgrade() bool //ConnectionUpgrade returns true if 'Connection: Upgrade' header is set.
     +SetConnectionUpgrade()
     +SetContentEncoding()
+    +GetContentEncoding()
     +SetContentLength() //Negative content-length sets 'Transfer-Encoding: chunked' header.
     +setContentType()
     +SetCookie()
     +CopyTo()
-    +del()
+    +del(key string) //delets header with given key
     +DelAllCookies()
+    +DelCookie(key string)
+    +Reset() //resets headers, deletes all header keys
     +Peek()
     +PeekAll()
     +PeekCookie()
     +Get/Set Protocol()
     +GetServerHeader()
-    +SetCanonical
+    +SetCanonical(key, value) // making key in canonical form, but do i need it?
     +SetLastModified()
-    +SetNoDefaultContentType()
+    +SetNoDefaultContentType() // if set to true, what do i set? Do i expose a const and set it??
     +SetProtocol()
     +SetStatusCode()
     +SetStatusMessage()
     +AddTrailer() // Add Trailed RequestHeaders, this is only supported in  chunked transfer encoding
+    +GetHost()
+    +IsConnect()
+    +IsDelete()
+    +IsGet()
+    +IsHead()
+    +IsOptions()
+    +IsPatch()
+    +IsPost()
+    +IsPut()
+    +IsTls()
+    +GetLocalAddr
+    +GetLocalIp()
+    +GetMethod()
+    +GetRequestPath()
+    +GetContentType()
+    +GetURI()
+    +GetUserAgent()
 
 
 I think cookie, needs to be its own class. Though it's send as part of header, logically it's need be handled seperately. 
@@ -134,11 +135,11 @@ HttpRequest{
 }
 
 HttpResponseHeaders{
-    httpResponseHeaders HttpResponseHeaders
+    httpRequestHeaders HttpRequestHeaders
     //all setters behaviour which is missing in response headers
 }
 
-HttpResponseHeaders{
+HttpRequestHeaders{
     //all get behaviours mentioned above
 }
 
